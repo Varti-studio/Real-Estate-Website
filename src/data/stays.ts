@@ -69,7 +69,7 @@ export const unsplash = (id: string, w = 1200) =>
  * An owned photo in `public/photos/`, shown as saved: the CDN can't apply `GRADE` to it, so grade the file itself if it should match.
  * One file serves every size; the `w=` parameter only keeps the components' `w=\d+` swaps working.
  */
-export const ownPhoto = (file: string, w = 1200) => `/photos/${file}?w=${w}`
+export const ownPhoto = (file: string, w = 1200) => `${import.meta.env.BASE_URL}photos/${file}?w=${w}`
 
 /** A square portrait cropped around the face (host avatars), in the same grade. */
 export const portrait = (id: string, size = 240) => `${unsplash(id, size)}&h=${size}&crop=faces`

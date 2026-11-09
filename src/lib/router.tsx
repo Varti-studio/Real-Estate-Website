@@ -7,6 +7,12 @@ import { useEffect, useState, useSyncExternalStore, type AnchorHTMLAttributes, t
 
 const EVENT = 'solum:navigate'
 
+/** The deploy's base path ('' in dev, '/Real-Estate-Website' on GitHub Pages). Routes stay base-less. */
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, '')
+const withBase = (to: string) => BASE + to
+const stripBase = (path: string) =>
+  BASE && (path === BASE || path.startsWith(BASE + '/')) ? path.slice(BASE.length) || '/' : path
+
 const subscribe = (onChange: () => void) => {
   window.addEventListener('popstate', onChange)
   window.addEventListener(EVENT, onChange)
@@ -16,7 +22,7 @@ const subscribe = (onChange: () => void) => {
   }
 }
 
-const snapshot = () => window.location.pathname + window.location.search
+const snapshot = () => stripBase(window.location.pathname) + window.location.search
 
 export function useLocation() {
   const href = useSyncExternalStore(subscribe, snapshot)
@@ -27,7 +33,7 @@ export function useLocation() {
 /** `replace` edits the current entry (live filter changes) and keeps the scroll position. */
 export function navigate(to: string, { replace = false } = {}) {
   if (to === snapshot()) return
-  window.history[replace ? 'replaceState' : 'pushState'](null, '', to)
+  window.history[replace ? 'replaceState' : 'pushState'](null, '', withBase(to))
   window.dispatchEvent(new Event(EVENT))
   if (!replace) window.scrollTo({ top: 0 })
 }
@@ -91,5 +97,5 @@ export function Link({ to, onClick, ...rest }: LinkProps) {
     onClick?.(e)
     linkClick(e, to)
   }
-  return <a href={to} onClick={handle} {...rest} />
+  return <a href={withBase(to)} onClick={handle} {...rest} />
 }
