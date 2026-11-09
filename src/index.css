@@ -1,0 +1,255 @@
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+@import '@fontsource/instrument-serif/400-italic.css';
+@import 'tailwindcss';
+/* Tailwind scans every project file; the docs quote forbidden classes as examples, so leave them out */
+@source not '../*.md';
+
+/* ─── Design tokens (see the design system notes) ─────────────────────────────────────── */
+@theme {
+  /* Palette — tone-on-tone, nature-inspired */
+  --color-ink: #121211;
+  --color-graphite-900: #1c1c1a;
+  --color-graphite-800: #2a2a27;
+  --color-graphite-600: #4a4944;
+  --color-stone-500: #8a867d;
+  --color-stone-300: #c9c4b8;
+  --color-line: #dedad0;
+  --color-sand: #e8e2d6;
+  --color-paper: #f4f1ea;
+  --color-milk: #faf8f3;
+  --color-graphite-500: #6b675f;
+
+  /* Typography */
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+  --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
+  /* Instrument Serif is a narrow italic: wherever it's used it opens up (see the rule below) */
+  --tracking-serif: 0.04em;
+  --word-spacing-serif: 0.08em;
+
+  /* Type scale on an 8px grid: 12 · 16 · 24 · 32 · 40 · 48 · 64 · 128. Tailwind's
+     default size scale is cleared, so only these tokens exist.
+     12px is for mono labels only. */
+  --text-*: initial;
+
+  /* Fluid sizes snap to 8px steps so every size lands on the scale */
+  --text-display: round(down, clamp(48px, 9vw, 168px), 8px);
+  --text-display--line-height: 0.9;
+  --text-display--letter-spacing: -0.045em;
+  --text-h2: round(down, clamp(40px, 4.5vw, 72px), 8px);
+  --text-h2--line-height: 0.95;
+  --text-h2--letter-spacing: -0.035em;
+
+  /* Fixed sizes. An explicit leading-* / tracking-* class still overrides the baked values */
+  /* Mono labels: eyebrows, coordinates, metadata, tags, badges. Uppercase ones add `tracking-label` */
+  --text-label: 12px;
+  --text-label--line-height: calc(16 / 12);
+  /* Running text, UI labels, buttons, inputs */
+  --text-body: 16px;
+  --text-body--line-height: 1.5;
+  /* Card and accordion titles, ledes */
+  --text-title: 24px;
+  --text-title--line-height: calc(32 / 24);
+  --text-title--letter-spacing: -0.02em;
+  /* Section headings inside a page (stay story, booking confirmation), step headings on mobile */
+  --text-h3: 32px;
+  --text-h3--line-height: 1.1;
+  --text-h3--letter-spacing: -0.03em;
+  /* Step headings from lg (How it works, the catalogue card) */
+  --text-h3-lg: 40px;
+  --text-h3-lg--line-height: 1.1;
+  --text-h3-lg--letter-spacing: -0.03em;
+  /* The serif quote mark, the mobile menu links */
+  --text-quote: 48px;
+  --text-quote--line-height: 1;
+
+  /* Every 12px uppercase mono label (eyebrows, coordinates, metadata rows, tags) */
+  --tracking-label: 0.14em;
+
+  /* Radii */
+  --radius-frame: 28px;
+  --radius-card: 20px;
+
+  /* Shadow — used sparingly, floating panels only */
+  --shadow-soft: 0 24px 60px -24px rgb(18 18 17 / 0.28);
+  --shadow-lift: 0 8px 24px -10px rgb(18 18 17 / 0.3);
+  --shadow-glass: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 12px 30px -14px rgb(18 18 17 / 0.5);
+
+  /* Motion — mirrors src/lib/motion.ts */
+  --ease-cinematic: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Tokens that must always exist: the accent (booking only) and the map palette, which is
+   read through getComputedStyle (see mapStyle.ts). `static` keeps Tailwind from dropping
+   variables no utility uses. */
+@theme static {
+  --color-accent: #e25121;
+  --color-accent-hover: #c4431a;
+  --color-accent-tint: #fbe4da;
+  --color-accent-on-dark: #f0794d;
+
+  --color-map-land: #f6f3ec;
+  --color-map-water: #bfd6df;
+  --color-map-waterway: #a8c4d0;
+  --color-map-park: #d9e3c8;
+  --color-map-wood: #dce5cc;
+  --color-map-residential: #eee8dd;
+  --color-map-building: #e6dfd2;
+  --color-map-ice: #ffffff;
+  --color-map-boundary: #b4ac9c;
+  --color-map-boundary-minor: #c2bbad;
+  --color-map-water-label: #5f7f8c;
+  --color-map-road-casing: #e3dbcb;
+  --color-map-road: #ffffff;
+}
+
+/* ─── Base ──────────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    /* Height of the pinned header (Header.tsx h-20). Anchor jumps and
+       scrollIntoView land below it; sticky elements offset by it. */
+    --header-h: 5rem;
+    scroll-padding-top: var(--header-h);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-paper font-sans text-ink antialiased;
+    font-feature-settings: 'ss01', 'cv11';
+  }
+
+  ::selection {
+    @apply bg-ink text-milk;
+  }
+
+  /* Keyboard focus: a 2px accent ring on buttons and links only. Text fields get none of their own. */
+  a[href]:focus-visible,
+  button:focus-visible,
+  summary:focus-visible,
+  [role='button']:focus-visible,
+  [role='radio']:focus-visible,
+  [role='tab']:focus-visible,
+  [role='link']:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  input:not([type='checkbox'], [type='radio'], [type='range']):focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+  }
+
+  /* Checkboxes, radios and sliders have no other keyboard cue, so they keep a ring */
+  input[type='checkbox']:focus-visible,
+  input[type='radio']:focus-visible,
+  input[type='range']:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  /* No line ends on a single word: headings and short labels balance their
+     lines, running text avoids a lone last word. `typeset()` (lib/typography)
+     adds non-breaking spaces for browsers without these. */
+  h1,
+  h2,
+  h3,
+  h4,
+  figcaption,
+  button,
+  label,
+  legend,
+  dt {
+    text-wrap: balance;
+  }
+
+  p,
+  li,
+  dd,
+  blockquote {
+    text-wrap: pretty;
+  }
+}
+
+/* ─── Utilities ─────────────────────────────────────────────────────────── */
+@utility container-x {
+  @apply mx-auto w-full max-w-[1680px] px-4 md:px-6 lg:px-10;
+}
+
+/* The one serif-italic accent of a heading or quote (tracking comes from the rule below). */
+@utility accent {
+  @apply font-serif font-normal italic;
+}
+
+/* Every use of Instrument Serif gets the same open tracking, instead of the
+   negative tracking of the heading around it. Unlayered, so it wins over any
+   `tracking-*` utility: change the spacing through the two tokens in @theme.
+   A single glyph (the host's initial, a quote mark) opts out with
+   `tracking-normal`, or the tracking pushes it off centre. */
+.font-serif:not(.tracking-normal),
+.accent:not(.tracking-normal) {
+  letter-spacing: var(--tracking-serif);
+  word-spacing: var(--word-spacing-serif);
+}
+
+@utility eyebrow {
+  @apply font-mono text-label leading-none tracking-label text-stone-500 uppercase;
+}
+
+/* Film grain for tone-on-tone placeholders */
+@utility grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+/* Dual-thumb price slider: two stacked native ranges, only the thumbs take the pointer */
+@utility range-thumbs {
+  @apply pointer-events-none absolute inset-x-0 top-1/2 h-6 w-full -translate-y-1/2 appearance-none bg-transparent;
+
+  &::-webkit-slider-runnable-track {
+    @apply h-6 bg-transparent;
+  }
+  &::-moz-range-track {
+    @apply h-6 bg-transparent;
+  }
+  &::-webkit-slider-thumb {
+    @apply pointer-events-auto mt-0 size-6 cursor-grab appearance-none rounded-full border border-ink bg-milk shadow-lift transition-transform duration-500 ease-cinematic;
+  }
+  &::-moz-range-thumb {
+    @apply pointer-events-auto size-6 cursor-grab rounded-full border border-ink bg-milk shadow-lift transition-transform duration-500 ease-cinematic;
+  }
+  &:active::-webkit-slider-thumb {
+    @apply scale-110 cursor-grabbing;
+  }
+  &:active::-moz-range-thumb {
+    @apply scale-110 cursor-grabbing;
+  }
+  &:focus-visible {
+    @apply outline-none;
+  }
+  &:focus-visible::-webkit-slider-thumb {
+    @apply outline-2 outline-offset-3 outline-accent;
+  }
+  &:focus-visible::-moz-range-thumb {
+    @apply outline-2 outline-offset-3 outline-accent;
+  }
+}
+
+/* MapLibre attribution, quietened to match the metadata style (scoped to outrank the lazy-loaded maplibre CSS) */
+.maplibregl-map .maplibregl-ctrl-attrib {
+  @apply font-mono text-label text-graphite-600;
+}
+.maplibregl-map .maplibregl-ctrl-attrib.maplibregl-compact {
+  @apply m-3 rounded-full bg-milk/85 backdrop-blur-md;
+}
+
+/* "Use Ctrl + scroll to zoom": cooperative-gesture hint on the stay map, in the house type */
+.maplibregl-map .maplibregl-cooperative-gesture-screen {
+  @apply bg-ink/50 p-6 font-mono text-label tracking-label text-milk uppercase;
+}

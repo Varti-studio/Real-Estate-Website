@@ -1,0 +1,13 @@
+{
+  "name": "solum-showcase",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "capture": "node capture.mjs",
+    "render": "node render.mjs",
+    "draft": "node render.mjs --draft"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.13.0"
+  }
+}
